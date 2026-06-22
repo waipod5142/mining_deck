@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GEOID × Streamax — Smart Mining Solution for Thailand</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0a0e17;--panel:#111726;--panel2:#161d30;--ink:#eef2f8;--muted:#9fb0c8;
+    --line:#243049;--amber:#ffb02e;--amber2:#ff8a00;--teal:#23d6c5;--blue:#3b82f6;
+    --green:#2fd27a;--red:#ff5d6c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);overflow:hidden}
+  .deck{position:relative;width:100vw;height:100vh}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;padding:5vh 6.2vw;opacity:0;transition:opacity .45s ease;overflow:hidden}
+  .slide.active{display:flex;opacity:1}
+  .slide::before{content:"";position:absolute;inset:0;z-index:0;
+    background:radial-gradient(900px 500px at 85% -10%,rgba(255,138,0,.10),transparent 60%),
+      radial-gradient(800px 600px at -5% 110%,rgba(35,214,197,.08),transparent 55%),
+      linear-gradient(180deg,#0a0e17 0%,#0c1220 100%)}
+  .slide > *{position:relative;z-index:1}
+  .net{position:absolute;inset:0;z-index:0;opacity:.5;
+    background-image:radial-gradient(circle,rgba(120,150,200,.18) 1px,transparent 1.4px);
+    background-size:42px 42px;mask:linear-gradient(180deg,transparent,#000 30%,#000 70%,transparent)}
+
+  .kicker{display:inline-flex;align-items:center;gap:.55rem;font-size:.82rem;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);font-weight:700;margin-bottom:1rem}
+  .kicker .dot{width:8px;height:8px;border-radius:50%;background:var(--amber);box-shadow:0 0 14px var(--amber);animation:blink 2s infinite}
+  h1{font-size:clamp(2rem,4.6vw,4rem);line-height:1.05;font-weight:800;letter-spacing:-.01em}
+  h2{font-size:clamp(1.5rem,3vw,2.6rem);line-height:1.1;font-weight:800;letter-spacing:-.01em;margin-bottom:.4rem}
+  .sub{color:var(--muted);font-size:clamp(1rem,1.4vw,1.22rem);max-width:62ch;line-height:1.55}
+  .accent{color:var(--amber)}.tealc{color:var(--teal)}
+
+  .chip{display:inline-flex;align-items:center;gap:.5rem;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:.5rem 1rem;font-weight:700;font-size:.95rem}
+  .chip .sq{width:12px;height:12px;border-radius:3px}
+  .brandbar{display:flex;align-items:center;gap:1.1rem;margin-bottom:1.5rem}
+
+  .cols{display:grid;gap:1.3rem;margin-top:auto;margin-bottom:auto}
+  .c2{grid-template-columns:1fr 1fr}.c4{grid-template-columns:repeat(4,1fr)}
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:16px;padding:1.25rem 1.35rem;position:relative;overflow:hidden}
+  .card h3{font-size:1.1rem;margin-bottom:.4rem;display:flex;align-items:center;gap:.55rem}
+  .card p{color:var(--muted);font-size:.94rem;line-height:1.5}
+  .card .ico{font-size:1.3rem}
+  .card .tag{position:absolute;top:0;right:0;background:var(--amber);color:#1a1200;font-size:.66rem;font-weight:800;letter-spacing:.06em;padding:.25rem .6rem;border-bottom-left-radius:10px}
+  .card .tag.meas{background:var(--teal)}
+
+  .stat .num{font-size:clamp(1.7rem,3.2vw,2.7rem);font-weight:800;color:var(--amber);line-height:1}
+  .stat .lab{color:var(--muted);font-size:.88rem;line-height:1.35}
+
+  ul.clean{list-style:none;display:flex;flex-direction:column;gap:.65rem;margin-top:.4rem}
+  ul.clean li{display:flex;gap:.7rem;align-items:flex-start;font-size:1.02rem;line-height:1.45}
+  ul.clean li b{color:var(--amber)}
+  ul.clean li::before{content:"▸";color:var(--teal);font-weight:800;margin-top:.05rem}
+
+  .flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:.7rem;margin:auto 0}
+  .node{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:16px;padding:1.3rem;text-align:center}
+  .node .big{font-size:1.15rem;font-weight:800;margin-bottom:.35rem}
+  .node small{color:var(--muted);font-size:.85rem;line-height:1.4;display:block}
+  .arrow{color:var(--amber);font-size:1.8rem;font-weight:800;text-align:center}
+  .node.mid{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber) inset,0 12px 40px rgba(255,138,0,.12)}
+
+  .pill{display:inline-block;background:rgba(35,214,197,.12);border:1px solid rgba(35,214,197,.4);color:var(--teal);padding:.3rem .8rem;border-radius:999px;font-size:.82rem;font-weight:700;margin-bottom:1rem}
+  .pill.amber{background:rgba(255,176,46,.12);border-color:rgba(255,176,46,.4);color:var(--amber)}
+  .pill.red{background:rgba(255,93,108,.12);border-color:rgba(255,93,108,.4);color:var(--red)}
+  .footnote{color:#6c7c97;font-size:.72rem;margin-top:1rem;line-height:1.4;max-width:82ch}
+
+  .split{display:grid;grid-template-columns:1.05fr .95fr;gap:2.2rem;height:100%;align-items:center}
+  .chartbox{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;padding:1.3rem 1.5rem;height:62vh;display:flex;flex-direction:column}
+  .chartbox h3{font-size:1rem;margin-bottom:.6rem;color:var(--muted);font-weight:600}
+  .chart-wrap{position:relative;flex:1;min-height:0}
+
+  /* ---------- FEATURE SHOWCASE ---------- */
+  #showcase{padding:4vh 5vw}
+  .show-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:1.8rem;flex:1;min-height:0}
+  .media{position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#05080f;min-height:0}
+  .media video,.media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+  .media.show-vid video{display:block}
+  .media.show-img img{display:block}
+  .media .glow{position:absolute;inset:0;z-index:3;pointer-events:none;
+    box-shadow:inset 0 0 120px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.04)}
+  .media .badge{position:absolute;top:14px;left:14px;z-index:4;background:rgba(10,14,23,.78);border:1px solid var(--line);
+    padding:.35rem .8rem;border-radius:999px;font-weight:800;font-size:.8rem;letter-spacing:.08em;color:var(--amber)}
+  .media .livedot{position:absolute;top:14px;right:14px;z-index:4;display:flex;align-items:center;gap:.4rem;background:rgba(10,14,23,.78);border:1px solid var(--line);padding:.35rem .7rem;border-radius:999px;font-size:.72rem;font-weight:700;color:var(--teal)}
+  .media .livedot i{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 10px var(--teal);animation:blink 1.4s infinite}
+  /* animated scan fallback (always behind, shows if video unavailable) */
+  .scan{position:absolute;inset:0;z-index:1;background:radial-gradient(circle at 50% 55%,rgba(255,176,46,.10),transparent 62%)}
+  .scan::before{content:"";position:absolute;inset:-20%;background:repeating-radial-gradient(circle at 50% 55%,transparent 0 36px,rgba(35,214,197,.12) 36px 38px);animation:expand 3.5s linear infinite}
+  .scan .gridfloor{position:absolute;inset:0;background-image:linear-gradient(rgba(120,150,200,.10) 1px,transparent 1px),linear-gradient(90deg,rgba(120,150,200,.10) 1px,transparent 1px);background-size:46px 46px;mask:linear-gradient(180deg,transparent,#000)}
+
+  .finfo{display:flex;flex-direction:column;justify-content:center;min-height:0}
+  .finfo h2{font-size:clamp(1.4rem,2.5vw,2.2rem)}
+  .ftag{color:var(--teal);font-size:1.05rem;font-weight:600;margin:.2rem 0 .9rem}
+  .finfo.swap{animation:rise .45s both}
+  .fnav{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:1.3rem}
+  .fnav button{background:var(--panel);border:1px solid var(--line);color:var(--muted);border-radius:9px;padding:.4rem .6rem;font-size:.78rem;font-weight:700;cursor:pointer;transition:.18s;min-width:34px}
+  .fnav button:hover{border-color:var(--amber);color:var(--ink)}
+  .fnav button.on{background:linear-gradient(180deg,var(--amber),var(--amber2));color:#201500;border-color:var(--amber)}
+  .fhint{color:#6c7c97;font-size:.74rem;margin-top:.8rem}
+
+  /* ---------- AI DISPATCH SCENE ---------- */
+  .scene{position:relative;height:62vh;background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .scene .road{position:absolute;left:0;right:0;top:50%;height:3px;background:repeating-linear-gradient(90deg,var(--line) 0 18px,transparent 18px 34px);transform:translateY(-50%)}
+  .scene .label{position:absolute;font-weight:800;font-size:1.05rem}
+  .scene .exc{left:6%;top:50%;transform:translateY(-50%);text-align:center}
+  .scene .cru{right:6%;top:50%;transform:translateY(-50%);text-align:center}
+  .scene .label small{display:block;color:var(--muted);font-size:.78rem;font-weight:600;margin-top:.2rem}
+  .truck{position:absolute;top:50%;font-size:2rem;animation:haul 7s linear infinite}
+  .truck.t2{animation-delay:-2.3s}.truck.t3{animation-delay:-4.6s}
+  .scene .scanline{position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(35,214,197,.06),transparent);background-size:40% 100%;animation:scanx 5s linear infinite}
+
+  /* ---------- PROOF FRAMEWORK ---------- */
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:.4rem}
+  .kpi{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:1.1rem}
+  .kpi .h{font-weight:800;font-size:1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+  .kpi .row{display:flex;justify-content:space-between;align-items:center;font-size:.86rem;color:var(--muted);padding:.35rem 0;border-bottom:1px dashed var(--line)}
+  .kpi .row:last-child{border-bottom:none}
+  .kpi .row b{color:var(--ink)}
+  .kpi .tbd{color:var(--teal);font-weight:800;letter-spacing:.04em}
+  .timeline{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:.5rem;margin-top:1.6rem}
+  .tl{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.9rem 1rem;text-align:center}
+  .tl b{display:block;color:var(--amber);font-size:.95rem}
+  .tl small{color:var(--muted);font-size:.76rem}
+  .tl.on{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber) inset}
+  .tarr{color:var(--teal);font-weight:800}
+
+  .table{width:100%;border-collapse:collapse;margin-top:.6rem;font-size:1rem}
+  .table th,.table td{text-align:left;padding:.7rem .9rem;border-bottom:1px solid var(--line)}
+  .table th{color:var(--muted);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.06em}
+  .table td b{color:var(--amber)}
+  .table .meas{color:var(--teal);font-weight:800}
+
+  .cta{display:flex;gap:1rem;margin-top:1.6rem;flex-wrap:wrap}
+  .btn{background:linear-gradient(180deg,var(--amber),var(--amber2));color:#201500;font-weight:800;padding:.85rem 1.5rem;border-radius:12px;font-size:1rem}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  .lead-badge{position:absolute;bottom:5vh;right:6.2vw;text-align:right;color:var(--muted);font-size:.9rem;line-height:1.5}
+  .lead-badge b{color:var(--ink)}
+
+  .progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--amber),var(--amber2));z-index:50;transition:width .35s}
+  .nav{position:fixed;bottom:18px;right:24px;display:flex;gap:.5rem;z-index:50}
+  .nav button{background:var(--panel);border:1px solid var(--line);color:var(--ink);width:40px;height:40px;border-radius:10px;font-size:1.1rem;cursor:pointer;transition:.2s}
+  .nav button:hover{border-color:var(--amber);color:var(--amber)}
+  .counter{position:fixed;bottom:26px;left:24px;z-index:50;color:var(--muted);font-size:.85rem}
+  .counter b{color:var(--ink)}
+  .brandmark{position:fixed;top:18px;right:26px;z-index:50;font-weight:800;font-size:.85rem;letter-spacing:.04em;color:var(--muted)}
+  .logo-g{color:var(--amber)}.logo-s{color:var(--teal)}
+
+  /* entrance animations */
+  @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+  @keyframes expand{from{transform:scale(.6);opacity:.8}to{transform:scale(1.5);opacity:0}}
+  @keyframes sweep{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  @keyframes haul{0%{left:14%}48%{left:80%}50%{left:80%}98%{left:14%}100%{left:14%}}
+  @keyframes scanx{from{background-position:-40% 0}to{background-position:140% 0}}
+  .slide.active .kicker,.slide.active h1,.slide.active h2,.slide.active .sub,.slide.active .pill,.slide.active .brandbar{animation:rise .55s both}
+  .slide.active .sub{animation-delay:.08s}
+  .slide.active .card,.slide.active .node,.slide.active .kpi,.slide.active .tl{animation:rise .5s both}
+  .slide.active .cols .card:nth-child(2),.slide.active .kpi-grid .kpi:nth-child(2){animation-delay:.07s}
+  .slide.active .cols .card:nth-child(3),.slide.active .kpi-grid .kpi:nth-child(3){animation-delay:.14s}
+  .slide.active .cols .card:nth-child(4),.slide.active .kpi-grid .kpi:nth-child(4){animation-delay:.21s}
+  @media (max-width:860px){.c4{grid-template-columns:1fr 1fr}.split,.show-grid{grid-template-columns:1fr}.chartbox,.scene{height:40vh}.kpi-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="brandmark"><span class="logo-g">GEOID</span> × <span class="logo-s">STREAMAX</span></div>
+
+<div class="deck" id="deck">
+
+  <!-- 1 TITLE -->
+  <section class="slide active">
+    <div class="net"></div>
+    <div class="brandbar">
+      <span class="chip"><span class="sq" style="background:var(--amber)"></span>GEOID (Thailand)</span>
+      <span style="color:var(--muted);font-weight:800">×</span>
+      <span class="chip"><span class="sq" style="background:var(--teal)"></span>Streamax Technology</span>
+    </div>
+    <div class="kicker"><span class="dot"></span>Smart Mining Solution · Thailand</div>
+    <h1>Mining&nbsp;4.0 for Thai mines<br><span class="accent">AI safety &amp; fleet intelligence</span>, locally supported</h1>
+    <p class="sub" style="margin-top:1.4rem">An end-to-end smart-mine platform combining global mining AI with trusted local service — engineered to protect people, equipment and output, with value proven on your own site.</p>
+    <div class="lead-badge">
+      Prepared for<br><b>ดร. กฤตยา ศักดิ์อมรสงวน</b><br>Senior Professional Mining Engineer · DPIM<br>
+      <span style="font-size:.8rem">Seminar: Technology 4.0 for Mining Productivity</span>
+    </div>
+  </section>
+
+  <!-- 2 PROBLEM -->
+  <section class="slide">
+    <div class="net"></div>
+    <div class="kicker"><span class="dot"></span>The Challenge</div>
+    <h2>Where mining margin is most at risk</h2>
+    <p class="sub">The biggest risks in a mine are operational and rarely visible until they cost money — in downtime, damaged equipment, and safety incidents.</p>
+    <div class="cols c4" style="margin-top:2rem">
+      <div class="card"><span class="ico">⏱️</span><h3>Unplanned downtime</h3><p>A lost bucket tooth in the crusher or a stalled haul cycle can halt production for hours.</p></div>
+      <div class="card"><span class="ico">🚧</span><h3>Safety incidents</h3><p>Blind-spot collisions, edge roll-overs and fatigue events cause injury, fines and shutdowns.</p></div>
+      <div class="card"><span class="ico">📉</span><h3>Low utilisation</h3><p>Trucks waiting on excavators and uneven dispatch leave expensive assets sitting idle.</p></div>
+      <div class="card"><span class="ico">🌫️</span><h3>Harsh conditions</h3><p>Dust, low light and unmarked roads defeat generic sensors and standard safety systems.</p></div>
+    </div>
+    <p class="sub" style="margin-top:1.8rem">Each risk is <b class="accent">addressable</b> with the right mining-specific sensing and dispatching layer — purpose-built for these conditions.</p>
+  </section>
+
+  <!-- 3 PARTNERSHIP -->
+  <section class="slide">
+    <div class="net"></div>
+    <div class="kicker"><span class="dot"></span>The Partnership</div>
+    <h2>One systemic stack, two specialists</h2>
+    <div class="flow" style="margin-top:1.5rem">
+      <div class="node">
+        <div class="big" style="color:var(--amber)">STREAMAX</div>
+        <small>Global mining AI &amp; edge hardware — vision + radar detection, DMS, AVM, V2X, AI dispatching.</small>
+      </div>
+      <div class="arrow">＋</div>
+      <div class="node mid">
+        <div class="big">GEOID (Thailand)</div>
+        <small>Certified local integrator &amp; telematics platform — install, training, 24/7 support, LINE/Telegram alerts. DLT &amp; NBTC certified.</small>
+      </div>
+      <div class="arrow">＝</div>
+      <div class="node">
+        <div class="big" style="color:var(--teal)">SMART MINE</div>
+        <small>Safer, higher-utilisation operations delivered and serviced on the ground in Thailand.</small>
+      </div>
+    </div>
+    <p class="sub" style="margin:1.8rem auto 0">Streamax is a core technology partner in GEOID's ecosystem for in-cab cameras and AI. Together they deliver hardware, algorithms, connectivity and local service as <b class="accent">a single accountable solution</b>.</p>
+  </section>
+
+  <!-- 4 FEATURE SHOWCASE (FOCUS, animated) -->
+  <section class="slide" id="showcase">
+    <div class="net"></div>
+    <div class="kicker"><span class="dot"></span>Streamax Mining Suite · Feature by Feature</div>
+    <div class="show-grid">
+      <div class="media show-vid" id="media">
+        <div class="scan"><div class="gridfloor"></div></div>
+        <video id="featVid" muted loop playsinline autoplay preload="metadata"></video>
+        <img id="featImg" alt="">
+        <div class="glow"></div>
+        <div class="badge" id="featCount">01 / 09</div>
+        <div class="livedot"><i></i> AI DETECTION</div>
+      </div>
+      <div class="finfo" id="finfo">
+        <span class="pill" id="featTag">Uptime</span>
+        <h2 id="featName">Bucket Tooth Loss Detection</h2>
+        <p class="ftag" id="featTagline">Every tooth matters. Detect early, operate safely.</p>
+        <ul class="clean" id="featPts"></ul>
+        <div class="fnav" id="fnav"></div>
+        <div class="fhint">▶ Use ← / → or click a number to step through all nine modules. Demo clips stream from streamax.com.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 AI DISPATCH (capability, no realised-savings claim) -->
+  <section class="slide">
+    <div class="net"></div>
+    <div class="split">
+      <div>
+        <div class="pill amber">Productivity lever</div>
+        <h2>AI Dispatching: a self-balancing haul fleet</h2>
+        <p class="sub">Utilisation is the biggest cost lever in haulage. AI dispatching is designed to keep the right truck at the right place at the right time.</p>
+        <ul class="clean" style="margin-top:1.2rem">
+          <li><b>Visualised scheduling</b> — every excavator &amp; truck visible in real time.</li>
+          <li><b>Dynamic allocation</b> — assignments adapt to cycle &amp; waiting time to reduce idle.</li>
+          <li><b>Production visibility</b> — live output &amp; ore-grade with slowdown alerts.</li>
+        </ul>
+        <p class="footnote">Shown conceptually. Any utilisation improvement is a target to be measured on your site, not a result claimed here.</p>
+      </div>
+      <div class="scene">
+        <div class="scanline"></div>
+        <div class="road"></div>
+        <div class="label exc">🚜<small>Excavator<br>loading</small></div>
+        <div class="label cru">🏭<small>Crusher<br>tip point</small></div>
+        <div class="truck t1">🚚</div>
+        <div class="truck t2">🚚</div>
+        <div class="truck t3">🚚</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 SAFETY (kept) -->
+  <section class="slide">
+    <div class="net"></div>
+    <div class="split">
+      <div>
+        <div class="pill red">Risk &amp; cost avoidance</div>
+        <h2>Every avoided incident is money kept</h2>
+        <p class="sub">Collisions, edge roll-overs and fatigue events carry direct repair, medical, legal and downtime costs — plus regulatory exposure.</p>
+        <ul class="clean" style="margin-top:1.2rem">
+          <li><b>Blind-spot + AVM 360°</b> — fewer low-speed collisions in yards &amp; pits.</li>
+          <li><b>DMS fatigue alerts</b> — intercept the events that cause the worst crashes.</li>
+          <li><b>Retaining-wall + V2X</b> — prevent over-edge dumping and blind-crest impacts.</li>
+        </ul>
+        <p class="footnote">Severity tiers (Attention / Warning / Critical) with archived alarm video for traceability and audit.</p>
+      </div>
+      <div class="chartbox">
+        <h3>Illustrative incident-cost reduction over 24 months</h3>
+        <div class="chart-wrap"><canvas id="safetyChart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 VALUE DRIVERS (no claimed numbers) -->
+  <section class="slide">
+    <div class="net"></div>
+    <div class="kicker"><span class="dot"></span>The Business Case</div>
+    <h2>Where value could come from</h2>
+    <p class="sub">Four mechanisms drive the return. None are claimed up front — each is defined now and <b class="tealc">measured against your baseline in a pilot</b>.</p>
+    <table class="table" style="margin-top:1.1rem">
+      <tr><th>Value driver</th><th>Mechanism</th><th>How it's proven</th></tr>
+      <tr><td>Higher utilisation</td><td>AI dispatching reduces truck idle &amp; waiting</td><td class="meas">Measured in pilot</td></tr>
+      <tr><td>Downtime avoided</td><td>Tooth-loss &amp; large-block detection</td><td class="meas">Measured in pilot</td></tr>
+      <tr><td>Incident cost avoided</td><td>Blind-spot, DMS, AVM 360°, V2X, retaining-wall</td><td class="meas">Measured in pilot</td></tr>
+      <tr><td>Equipment protection</td><td>Earlier detection of damage &amp; risk events</td><td class="meas">Measured in pilot</td></tr>
+    </table>
+    <p class="footnote">No financial benefit is asserted at this stage. Streamax notes product-performance figures are theoretical and vary by deployment; real numbers come from a site pilot (next slide).</p>
+  </section>
+
+  <!-- 8 PROOF FRAMEWORK (improved) -->
+  <section class="slide">
+    <div class="net"></div>
+    <div class="kicker"><span class="dot"></span>How We Prove It</div>
+    <h2>We prove the ROI on your site, not on a slide</h2>
+    <p class="sub">A transparent measurement framework: agree the KPIs, capture a baseline, then read the change over a 60–90 day pilot before any scale-up.</p>
+    <div class="kpi-grid" style="margin-top:1.3rem">
+      <div class="kpi"><div class="h">⛽ Idle &amp; fuel</div>
+        <div class="row">Baseline <b>capture</b></div><div class="row">Pilot result <span class="tbd">TBD</span></div><div class="row">Source <b>telematics</b></div></div>
+      <div class="kpi"><div class="h">🚚 Utilisation</div>
+        <div class="row">Baseline <b>capture</b></div><div class="row">Pilot result <span class="tbd">TBD</span></div><div class="row">Source <b>dispatch logs</b></div></div>
+      <div class="kpi"><div class="h">⏱️ Downtime</div>
+        <div class="row">Baseline <b>capture</b></div><div class="row">Pilot result <span class="tbd">TBD</span></div><div class="row">Source <b>maintenance</b></div></div>
+      <div class="kpi"><div class="h">🛡️ Incidents</div>
+        <div class="row">Baseline <b>capture</b></div><div class="row">Pilot result <span class="tbd">TBD</span></div><div class="row">Source <b>alarm video</b></div></div>
+    </div>
+    <div class="timeline">
+      <div class="tl on"><b>1 · Assess</b><small>Walk site, agree KPIs &amp; baseline</small></div>
+      <div class="tarr">→</div>
+      <div class="tl"><b>2 · Pilot</b><small>Equip small fleet, 60–90 days</small></div>
+      <div class="tarr">→</div>
+      <div class="tl"><b>3 · Verify</b><small>Read results vs. baseline</small></div>
+      <div class="tarr">→</div>
+      <div class="tl"><b>4 · Scale</b><small>Roll out with local support</small></div>
+    </div>
+  </section>
+
+  <!-- 9 THAILAND ALIGNMENT -->
+  <section class="slide">
+    <div class="net"></div>
+    <div class="kicker"><span class="dot"></span>National Alignment</div>
+    <h2>Built for Thailand's Mining 4.0 agenda</h2>
+    <p class="sub">The solution maps directly onto DPIM's priorities — productivity, safety, environmental care and data-driven oversight.</p>
+    <div class="cols c2" style="margin-top:1.6rem">
+      <div class="card"><h3>🏭 Productivity &amp; competitiveness</h3><p>Technology 4.0 raises output per asset — the core theme of DPIM's productivity seminars.</p></div>
+      <div class="card"><h3>🛡️ Safety &amp; community trust</h3><p>Fewer incidents and full audit trails support "mining for the community" and responsible operations.</p></div>
+      <div class="card"><h3>🌱 Environmental efficiency</h3><p>Lower idling and optimised hauling reduce emissions and fuel use per tonne.</p></div>
+      <div class="card"><h3>📊 Data &amp; compliance ready</h3><p>DLT/NBTC-certified, API-open data that fits GIS and reporting workflows.</p></div>
+    </div>
+    <p class="sub" style="margin-top:1.5rem">A practical, locally-serviced path for Thai operators to modernise — without importing the support gap.</p>
+  </section>
+
+  <!-- 10 CTA -->
+  <section class="slide">
+    <div class="net"></div>
+    <div class="kicker"><span class="dot"></span>Let's Build It Together</div>
+    <h1>Safer mines. Higher uptime.<br><span class="accent">Proven on your site.</span></h1>
+    <p class="sub" style="margin-top:1.4rem">GEOID and Streamax bring global mining AI and trusted local support into one accountable partnership — ready to pilot with Thai operators and align with DPIM's Mining 4.0 goals.</p>
+    <div class="cta">
+      <span class="btn">Propose a site pilot</span>
+      <span class="btn ghost">Co-develop KPIs with DPIM</span>
+    </div>
+    <div class="lead-badge" style="bottom:6vh">
+      <b>GEOID (Thailand) Co., Ltd.</b><br>
+      Bang Pa-in, Phra Nakhon Si Ayutthaya<br>
+      +66 81 499 8528 · geoidth.com<br>
+      <span style="font-size:.8rem">In partnership with Streamax Technology · streamax.com</span>
+    </div>
+  </section>
+
+</div>
+
+<div class="counter">Slide <b id="cur">1</b> / <span id="tot">10</span></div>
+<div class="nav">
+  <button onclick="prev()" aria-label="Previous">‹</button>
+  <button onclick="next()" aria-label="Next">›</button>
+</div>
+
+<script>
+  const S='https://www.streamax.com';
+  const FEATS=[
+    {name:'Bucket Tooth Loss Detection',tag:'Uptime',line:'Every tooth matters. Detect early, operate safely.',
+      pts:['Universal fit across bucket &amp; tooth types','Vision AI with quick calibration','Open API into work-order systems'],
+      v:S+'/upload/video/2026/01/12/d7d3e685-4598-47e3-8b09-4e1492926b3d.mp4'},
+    {name:'Large Block Detection',tag:'Throughput',line:'Stop the block, keep the flow.',
+      pts:['Spots oversized ore within seconds','Configurable thresholds per crusher','Black-light tech for low-light reliability'],
+      v:S+'/upload/video/2026/01/12/7503eabf-b75c-4524-897a-13708961dbe9.mp4'},
+    {name:'AI Dispatching',tag:'Productivity',line:'Right truck, right time, right place.',
+      pts:['Visualised real-time scheduling','Dynamic truck allocation','Live output &amp; ore-grade visibility'],
+      img:S+'/upload/image/2026/01/12/eb953ca6-bf2d-4f8a-b240-ec8e5809775e.jpg'},
+    {name:'Blind-Spot People &amp; Vehicle Detection',tag:'Safety',line:'See the unseen.',
+      pts:['Tuned for unmarked mine roads','Detects pedestrians &amp; light vehicles','Black-light low-light performance'],
+      v:S+'/upload/video/2026/01/12/efdbf016-3090-4663-a030-112b0a779440.mp4'},
+    {name:'Driver Monitoring System (DMS)',tag:'Safety',line:'Focused driving, safer mining.',
+      pts:['Robust to helmets, masks &amp; vibration','Edge alerts without network','Optional wearable fatigue integration'],
+      v:S+'/upload/video/2026/01/12/eccd16d7-38ea-4fe3-8fb1-57dd2ff1b6c2.mp4'},
+    {name:'AVM 360° Surround View',tag:'Safety',line:'All-around vision, reduced blind spots.',
+      pts:['Seamless bird&rsquo;s-eye from 4–6 cameras','Auto-switching perspectives','One-minute calibration'],
+      v:S+'/upload/video/2026/01/12/3e0e712b-a248-4aa6-8ce4-0b0f506d4f99.mp4'},
+    {name:'V2X Over-the-Horizon Detection',tag:'Safety',line:'See beyond sightlines. Stay aware, stay safe.',
+      pts:['V2V &amp; V2I cooperative perception','High-precision RTK positioning','Detects vehicles up to 200&nbsp;m'],
+      v:S+'/upload/video/2026/01/12/6809019e-8015-42bc-bc7b-5717def38954.mp4'},
+    {name:'Retaining Wall Detection',tag:'Safety',line:'Know the edge. Drive with confidence.',
+      pts:['Reverse distance monitoring','Dust-resistant millimeter-wave radar','Radar + vision fusion alerts'],
+      v:S+'/upload/video/2026/01/12/5069ba22-42d3-4f8b-8f87-388440517c9d.mp4'},
+    {name:'Forward Risk Detection',tag:'Safety',line:'Smarter alerts, built for the mine.',
+      pts:['Mine-specific collision logic','Radar-vision fusion in dust &amp; fog','Adaptive mine / urban modes'],
+      v:S+'/upload/video/2026/01/12/d4d73db0-2a74-4298-bf5a-7adf390f2b0f.mp4'}
+  ];
+
+  const slides=[...document.querySelectorAll('.slide')];
+  let i=0;const tot=slides.length;let feat=0;
+  document.getElementById('tot').textContent=tot;
+  let charted={};
+  const media=document.getElementById('media');
+  const vid=document.getElementById('featVid');
+  const img=document.getElementById('featImg');
+
+  function isShow(){return slides[i].id==='showcase';}
+
+  function renderFeat(){
+    const f=FEATS[feat];
+    document.getElementById('featCount').textContent=String(feat+1).padStart(2,'0')+' / 09';
+    document.getElementById('featTag').textContent=f.tag;
+    document.getElementById('featName').innerHTML=f.name;
+    document.getElementById('featTagline').innerHTML=f.line;
+    document.getElementById('featPts').innerHTML=f.pts.map(p=>'<li>'+p+'</li>').join('');
+    // media
+    if(f.img){
+      media.classList.remove('show-vid');media.classList.add('show-img');
+      img.src=f.img; vid.removeAttribute('src'); try{vid.load();}catch(e){}
+    }else{
+      media.classList.remove('show-img');media.classList.add('show-vid');
+      vid.src=f.v; try{vid.load();vid.play().catch(()=>{});}catch(e){}
+    }
+    // fnav
+    const fn=document.getElementById('fnav');
+    fn.innerHTML=FEATS.map((x,n)=>'<button class="'+(n===feat?'on':'')+'" onclick="jump('+n+')">'+(n+1)+'</button>').join('');
+    // swap animation
+    const fi=document.getElementById('finfo');
+    fi.classList.remove('swap');void fi.offsetWidth;fi.classList.add('swap');
+  }
+  // if remote video fails, the animated scan layer stays visible
+  vid.addEventListener('error',()=>{media.classList.remove('show-vid');});
+
+  function jump(n){feat=n;renderFeat();}
+
+  function render(){
+    slides.forEach((s,n)=>s.classList.toggle('active',n===i));
+    document.getElementById('cur').textContent=i+1;
+    document.getElementById('prog').style.width=((i+1)/tot*100)+'%';
+    if(isShow())renderFeat(); else {try{vid.pause();}catch(e){}}
+    drawCharts();
+  }
+  function go(d){
+    const ni=Math.max(0,Math.min(tot-1,i+d));
+    i=ni;
+    if(isShow())feat=d>0?0:FEATS.length-1;
+    render();
+  }
+  function next(){ if(isShow()&&feat<FEATS.length-1){feat++;renderFeat();} else go(1); }
+  function prev(){ if(isShow()&&feat>0){feat--;renderFeat();} else go(-1); }
+
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){next();e.preventDefault();}
+    if(e.key==='ArrowLeft'||e.key==='PageUp'){prev();e.preventDefault();}
+    if(e.key==='Home'){i=0;feat=0;render();}
+    if(e.key==='End'){i=tot-1;render();}
+  });
+  let sx=null;
+  document.addEventListener('touchstart',e=>sx=e.touches[0].clientX);
+  document.addEventListener('touchend',e=>{if(sx===null)return;const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>50)(dx<0?next():prev());sx=null;});
+
+  const GRID='rgba(120,140,180,.12)',TICK='#9fb0c8';
+  Chart.defaults.color=TICK;Chart.defaults.font.family='Segoe UI, system-ui, sans-serif';
+  function drawCharts(){
+    if(slides[i].querySelector('#safetyChart')&&!charted.safe){charted.safe=1;
+      new Chart(document.getElementById('safetyChart'),{type:'line',
+        data:{labels:['M0','M4','M8','M12','M16','M20','M24'],
+          datasets:[{label:'Indexed incident cost (illustrative)',data:[100,84,70,58,49,42,37],
+            borderColor:'#ff5d6c',backgroundColor:'rgba(255,93,108,.15)',fill:true,tension:.35,borderWidth:3,pointRadius:3}]},
+        options:{responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{labels:{color:TICK,boxWidth:12}}},
+          scales:{y:{beginAtZero:true,max:110,grid:{color:GRID},ticks:{color:TICK}},x:{grid:{color:GRID},ticks:{color:TICK}}}}});
+    }
+  }
+  feat=0;render();
+</script>
+</body>
+</html>

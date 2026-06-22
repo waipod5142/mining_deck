@@ -146,6 +146,24 @@
   .brandmark{position:fixed;top:18px;right:26px;z-index:50;font-weight:800;font-size:.85rem;letter-spacing:.04em;color:var(--muted)}
   .logo-g{color:var(--amber)}.logo-s{color:var(--teal)}
 
+  /* ---------- TITLE COMMAND-MAP SCENE ---------- */
+  .title-wrap{display:grid;grid-template-columns:.92fr 1.08fr;gap:2.2rem;align-items:center;height:100%}
+  .title-left{display:flex;flex-direction:column;justify-content:center}
+  .title-left h1{font-size:clamp(1.8rem,3.4vw,3rem)}
+  .title-left .sub{margin-top:1.2rem}
+  .lead-badge.tl{position:static;text-align:left;margin-top:2rem}
+  .iscene{display:block;position:relative;width:100%;height:72vh;border:1px solid var(--line);border-radius:20px;overflow:hidden;
+    background:#05080f;text-decoration:none;outline:none}
+  .iscene-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#05080f}
+  .iscene .tagline{position:absolute;right:5.5%;bottom:7%;z-index:6;text-align:right;font-weight:800;line-height:1.14;color:var(--ink);
+    font-size:clamp(1rem,1.85vw,1.75rem);text-shadow:0 2px 22px rgba(0,0,0,.85);pointer-events:none}
+  .iscene .tagline .ta{color:var(--amber)}.iscene .tagline .tt{color:var(--teal)}
+  .srcbadge{position:absolute;left:5.5%;bottom:7%;z-index:6;font-size:.78rem;font-weight:700;color:var(--muted);
+    background:rgba(10,14,23,.72);border:1px solid var(--line);padding:.35rem .75rem;border-radius:999px;transition:.18s}
+  .iscene:hover .srcbadge,.iscene:focus-visible .srcbadge{color:var(--ink);border-color:var(--amber)}
+  .iscene:focus-visible{box-shadow:0 0 0 2px var(--amber)}
+  @media (max-width:860px){.title-wrap{grid-template-columns:1fr;gap:1rem}.iscene{height:40vh}}
+
   /* entrance animations */
   @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
   @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
@@ -171,17 +189,33 @@
   <!-- 1 TITLE -->
   <section class="slide active">
     <div class="net"></div>
-    <div class="brandbar">
-      <span class="chip"><span class="sq" style="background:var(--amber)"></span>GEOID (Thailand)</span>
-      <span style="color:var(--muted);font-weight:800">×</span>
-      <span class="chip"><span class="sq" style="background:var(--teal)"></span>Streamax Technology</span>
-    </div>
-    <div class="kicker"><span class="dot"></span>Smart Mining Solution · Thailand</div>
-    <h1>Mining&nbsp;4.0 for Thai mines<br><span class="accent">AI safety &amp; fleet intelligence</span>, locally supported</h1>
-    <p class="sub" style="margin-top:1.4rem">An end-to-end smart-mine platform combining global mining AI with trusted local service — engineered to protect people, equipment and output, with value proven on your own site.</p>
-    <div class="lead-badge">
-      Prepared for<br><b>ดร. กฤตยา ศักดิ์อมรสงวน</b><br>Senior Professional Mining Engineer · DPIM<br>
-      <span style="font-size:.8rem">Seminar: Technology 4.0 for Mining Productivity</span>
+    <div class="title-wrap">
+      <div class="title-left">
+        <div class="brandbar">
+          <span class="chip"><span class="sq" style="background:var(--amber)"></span>GEOID (Thailand)</span>
+          <span style="color:var(--muted);font-weight:800">×</span>
+          <span class="chip"><span class="sq" style="background:var(--teal)"></span>Streamax Technology</span>
+        </div>
+        <div class="kicker"><span class="dot"></span>Smart Mining Solution · Thailand</div>
+        <h1>Mining&nbsp;4.0 for Thai mines<br><span class="accent">AI safety &amp; fleet intelligence</span>, locally supported</h1>
+        <p class="sub">An end-to-end smart-mine platform combining global mining AI with trusted local service — engineered to protect people, equipment and output, with value proven on your own site.</p>
+        <div class="lead-badge tl">
+          Prepared for<br><b>ดร. กฤตยา ศักดิ์อมรสงวน</b><br>Department of Primary Industries and Mines
+        </div>
+      </div>
+
+      <!-- Streamax mining-solution hero animation — links to source page -->
+      <a class="iscene" href="https://www.streamax.com/category/mining-solution.html" target="_blank" rel="noopener"
+         aria-label="Streamax Mining Solution — Integrated Intelligence for Safer, Smarter, High-Performance Mining (opens streamax.com)">
+        <video class="iscene-vid" src="https://www.streamax.com/upload/video/2026/01/12/b0471525-6e9e-4890-8f6b-dc2d8786c7e3.mp4"
+               autoplay loop muted playsinline preload="auto"></video>
+        <div class="tagline">
+          Integrated Intelligence<br>
+          for <span class="ta">Safer</span>, <span class="tt">Smarter</span>,<br>
+          <span class="ta">High-Performance</span> Mining
+        </div>
+        <span class="srcbadge">Streamax Mining Solution ↗</span>
+      </a>
     </div>
   </section>
 

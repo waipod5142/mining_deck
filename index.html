@@ -143,8 +143,11 @@
   .nav button:hover{border-color:var(--amber);color:var(--amber)}
   .counter{position:fixed;bottom:26px;left:24px;z-index:50;color:var(--muted);font-size:.85rem}
   .counter b{color:var(--ink)}
-  .brandmark{position:fixed;top:18px;right:26px;z-index:50;font-weight:800;font-size:.85rem;letter-spacing:.04em;color:var(--muted)}
-  .logo-g{color:var(--amber)}.logo-s{color:var(--teal)}
+  .brandmark{position:fixed;top:18px;right:26px;z-index:50;display:flex;align-items:center;gap:.6rem}
+  .brandmark .lg-geoid{height:17px}.brandmark .lg-sx{height:13px}
+  .xsep{color:var(--muted);font-weight:800;font-size:.95rem;line-height:1}
+  .brandbar .lg-geoid{height:30px}.brandbar .lg-sx{height:22px}
+  .lg-geoid,.lg-sx{width:auto;display:block}
 
   /* ---------- TITLE COMMAND-MAP SCENE ---------- */
   .title-wrap{display:grid;grid-template-columns:.92fr 1.08fr;gap:2.2rem;align-items:center;height:100%}
@@ -182,7 +185,7 @@
 </head>
 <body>
 <div class="progress" id="prog"></div>
-<div class="brandmark"><span class="logo-g">GEOID</span> × <span class="logo-s">STREAMAX</span></div>
+<div class="brandmark"><img class="lg-geoid" src="assets/geoid-logo.png" alt="GEOID"><span class="xsep">×</span><img class="lg-sx" src="assets/streamax-logo.png" alt="Streamax"></div>
 
 <div class="deck" id="deck">
 
@@ -192,9 +195,9 @@
     <div class="title-wrap">
       <div class="title-left">
         <div class="brandbar">
-          <span class="chip"><span class="sq" style="background:var(--amber)"></span>GEOID (Thailand)</span>
-          <span style="color:var(--muted);font-weight:800">×</span>
-          <span class="chip"><span class="sq" style="background:var(--teal)"></span>Streamax Technology</span>
+          <img class="lg-geoid" src="assets/geoid-logo.png" alt="GEOID (Thailand)">
+          <span class="xsep">×</span>
+          <img class="lg-sx" src="assets/streamax-logo.png" alt="Streamax Technology">
         </div>
         <div class="kicker"><span class="dot"></span>Smart Mining Solution · Thailand</div>
         <h1>Mining&nbsp;4.0 for Thai mines<br><span class="accent">AI safety &amp; fleet intelligence</span>, locally supported</h1>

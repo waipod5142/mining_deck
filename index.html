@@ -155,7 +155,13 @@
   .poc-head .lbl{font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
   .poc-head img{height:30px;width:auto;display:block}
   .poc-shots{display:grid;grid-template-columns:repeat(6,1fr);gap:.7rem}
-  .poc-shots img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;border:1px solid var(--line);display:block}
+  .poc-shots img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;border:1px solid var(--line);display:block;cursor:zoom-in;transition:transform .18s,border-color .18s}
+  .poc-shots img:hover{transform:translateY(-2px);border-color:var(--amber)}
+  .lightbox{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(5,8,15,.92);backdrop-filter:blur(6px);cursor:zoom-out;padding:4vh 4vw}
+  .lightbox.open{display:flex;animation:rise .25s both}
+  .lightbox img{max-width:100%;max-height:92vh;border-radius:14px;border:1px solid var(--line);box-shadow:0 30px 90px rgba(0,0,0,.65)}
+  .lightbox .lb-close{position:absolute;top:18px;right:22px;font-size:1.5rem;color:var(--ink);background:rgba(10,14,23,.7);border:1px solid var(--line);width:44px;height:44px;border-radius:10px;cursor:pointer;line-height:1}
+  .lightbox .lb-close:hover{border-color:var(--amber);color:var(--amber)}
 
   .progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--amber),var(--amber2));z-index:50;transition:width .35s}
   .nav{position:fixed;bottom:18px;right:24px;display:flex;gap:.5rem;z-index:50}
@@ -549,6 +555,11 @@
 
 </div>
 
+<div class="lightbox" id="lightbox" onclick="closeLB()">
+  <button class="lb-close" aria-label="Close">✕</button>
+  <img id="lbImg" alt="">
+</div>
+
 <div class="counter">Slide <b id="cur">1</b> / <span id="tot">10</span></div>
 <div class="nav">
   <button onclick="prev()" aria-label="Previous">‹</button>
@@ -640,7 +651,14 @@
   function next(){ if(isShow()&&feat<FEATS.length-1){feat++;renderFeat();} else go(1); }
   function prev(){ if(isShow()&&feat>0){feat--;renderFeat();} else go(-1); }
 
+  // image lightbox (slide 10 site photos)
+  const lb=document.getElementById('lightbox'),lbImg=document.getElementById('lbImg');
+  function openLB(im){lbImg.src=im.src;lbImg.alt=im.alt;lb.classList.add('open');}
+  function closeLB(){lb.classList.remove('open');}
+  document.querySelectorAll('.poc-shots img').forEach(im=>im.addEventListener('click',()=>openLB(im)));
+
   document.addEventListener('keydown',e=>{
+    if(lb.classList.contains('open')){ if(e.key==='Escape')closeLB(); return; }
     if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){next();e.preventDefault();}
     if(e.key==='ArrowLeft'||e.key==='PageUp'){prev();e.preventDefault();}
     if(e.key==='Home'){i=0;feat=0;render();}
